@@ -1,0 +1,391 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Player Report Card (Shared)</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Supabase JS (v2) via CDN -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // 1) PASTE YOUR SUPABASE DETAILS HERE:
+    const SUPABASE_URL = "https://wzqxgudtgveumnqeowvn.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
+
+    // Create Supabase client
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // :contentReference[oaicite:4]{index=4}
+
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+    const clamp = (n) => Math.max(0, Math.min(100, Number(n || 0)));
+
+    function getFormData() {
+      return {
+        name: $("name").value.trim(),
+        age_group: $("age").value.trim(),
+        position: $("pos").value.trim(),
+        stats: {
+          passing: clamp($("passing").value),
+          control: clamp($("control").value),
+          dribbling: clamp($("dribbling").value),
+          defending: clamp($("defending").value),
+          speed: clamp($("speed").value),
+          effort: clamp($("effort").value),
+        },
+        comment: $("comment").value.trim(),
+      };
+    }
+
+    function setFormData(data) {
+      $("name").value = data?.name ?? "";
+      $("age").value = data?.age_group ?? "";
+      $("pos").value = data?.position ?? "";
+      $("passing").value = data?.stats?.passing ?? 0;
+      $("control").value = data?.stats?.control ?? 0;
+      $("dribbling").value = data?.stats?.dribbling ?? 0;
+      $("defending").value = data?.stats?.defending ?? 0;
+      $("speed").value = data?.stats?.speed ?? 0;
+      $("effort").value = data?.stats?.effort ?? 0;
+      $("comment").value = data?.comment ?? "";
+      renderCard(getFormData());
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ---------- Charts ----------
+    const radarChart = new Chart(document.getElementById("radar"), {
+      type: "radar",
+      data: {
+        labels: ["Passing","Control","Dribbling","Defending","Speed","Effort"],
+        datasets: [{
+          label: "Overall Ability",
+          data: [0,0,0,0,0,0]
+        }]
+      },
+      options: {
+        scales: { r: { min: 0, max: 100 } },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    const barChart = new Chart(document.getElementById("bars"), {
+      type: "bar",
+      data: {
+        labels: ["Passing","Speed","Effort"],
+        datasets: [{
+          label: "Key Strengths",
+          data: [0,0,0]
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        scales: { x: { min: 0, max: 100 } },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    function renderCard(data) {
+      $("cardName").textContent = data.name || "Unnamed Player";
+      $("cardInfo").textContent = `Age Group: ${data.age_group || "-"} | Position: ${data.position || "-"}`;
+      $("cardComment").textContent = data.comment || "";
+
+      radarChart.data.datasets[0].data = [
+        data.stats.passing, data.stats.control, data.stats.dribbling,
+        data.stats.defending, data.stats.speed, data.stats.effort
+      ];
+      radarChart.update();
+
+      barChart.data.datasets[0].data = [
+        data.stats.passing, data.stats.speed, data.stats.effort
+      ];
+      barChart.update();
+    }
+
+    // ---------- Auth ----------
+    async function refreshAuthUI() {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData?.session;
+
+      if (session) {
+        $("authState").innerHTML = `Logged in as <b>${escapeHtml(session.user.email)}</b>`;
+        $("loginBox").style.display = "none";
+        $("appBox").style.display = "block";
+        await refreshPlayerList();
+      } else {
+        $("authState").textContent = "Not logged in";
+        $("loginBox").style.display = "block";
+        $("appBox").style.display = "none";
+      }
+    }
+
+    async function signIn() {
+      const email = $("email").value.trim();
+      const password = $("password").value;
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password }); // :contentReference[oaicite:5]{index=5}
+      if (error) {
+        alert("Login failed: " + error.message);
+        return;
+      }
+      await refreshAuthUI();
+    }
+
+    async function signOut() {
+      await supabase.auth.signOut();
+      await refreshAuthUI();
+    }
+
+    // ---------- Database ops ----------
+    // Table: players
+    // Columns: id (uuid), name (text), age_group (text), position (text), stats (jsonb), comment (text), updated_at (timestamp)
+    async function savePlayer() {
+      const p = getFormData();
+      if (!p.name) {
+        alert("Please enter a player name.");
+        return;
+      }
+
+      // Upsert by name (simple for clubs). You can change to ID-based later if you want.
+      const { error } = await supabase
+        .from("players")
+        .upsert({
+          name: p.name,
+          age_group: p.age_group,
+          position: p.position,
+          stats: p.stats,
+          comment: p.comment,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "name" });
+
+      if (error) {
+        alert("Save failed: " + error.message);
+        return;
+      }
+
+      alert("Saved: " + p.name);
+      await refreshPlayerList(p.name);
+    }
+
+    async function refreshPlayerList(selectName = "") {
+      const { data, error } = await supabase
+        .from("players")
+        .select("name")
+        .order("name", { ascending: true });
+
+      if (error) {
+        alert("Could not load player list: " + error.message);
+        return;
+      }
+
+      const sel = $("loadSelect");
+      sel.innerHTML = `<option value="">-- choose a saved player --</option>` +
+        (data || []).map(row => `<option value="${escapeHtml(row.name)}">${escapeHtml(row.name)}</option>`).join("");
+
+      if (selectName) sel.value = selectName;
+    }
+
+    async function loadPlayerByName(name) {
+      const { data, error } = await supabase
+        .from("players")
+        .select("name, age_group, position, stats, comment")
+        .eq("name", name)
+        .single();
+
+      if (error) {
+        alert("Load failed: " + error.message);
+        return;
+      }
+      setFormData(data);
+    }
+
+    async function clearForm() {
+      setFormData({
+        name: "",
+        age_group: "",
+        position: "",
+        stats: { passing:0, control:0, dribbling:0, defending:0, speed:0, effort:0 },
+        comment: ""
+      });
+    }
+
+    // ---------- Wire up UI ----------
+    function wireLiveUpdates() {
+      ["name","age","pos","passing","control","dribbling","defending","speed","effort","comment"]
+        .forEach(id => $(id).addEventListener("input", () => renderCard(getFormData())));
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Buttons
+      $("loginBtn").addEventListener("click", signIn);
+      $("logoutBtn").addEventListener("click", signOut);
+      $("saveBtn").addEventListener("click", savePlayer);
+      $("newBtn").addEventListener("click", clearForm);
+      $("printBtn").addEventListener("click", () => window.print());
+
+      $("loadSelect").addEventListener("change", async (e) => {
+        const name = e.target.value;
+        if (name) await loadPlayerByName(name);
+      });
+
+      wireLiveUpdates();
+      renderCard(getFormData());
+
+      // Keep UI in sync if session changes
+      supabase.auth.onAuthStateChange(async () => {
+        await refreshAuthUI();
+      });
+
+      await refreshAuthUI();
+    });
+  </script>
+
+  <style>
+    body { font-family: Arial; background:#eee; margin:0; padding:20px; }
+    .wrap { max-width: 1100px; margin: 0 auto; display:flex; gap:16px; }
+    .panel, .card { background:#fff; border-radius:12px; padding:16px; }
+    .panel { width: 380px; }
+    .card { flex:1; }
+    label { display:block; font-size: 13px; margin-top:10px; }
+    input, select, textarea, button {
+      width:100%; box-sizing:border-box; padding:10px; margin-top:6px;
+      border:1px solid #ccc; border-radius:10px; font-size: 14px;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .row { display:flex; gap:16px; margin-top:16px; }
+    .box { flex:1; }
+    .btnrow { display:flex; gap:10px; margin-top:12px; }
+    .btnrow button { width:50%; cursor:pointer; }
+    .mini { font-size: 12px; color:#555; margin-top:8px; line-height:1.35; }
+    h1 { margin:0 0 6px 0; }
+    p { margin: 0 0 6px 0; }
+    .topline { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    @media print {
+      .panel { display:none; }
+      body { background:#fff; padding:0; }
+      .wrap { max-width: none; margin:0; }
+      .card { border-radius:0; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <!-- LEFT: AUTH + EDITOR -->
+    <div class="panel">
+      <div class="topline">
+        <h2 style="margin:0;">Shared Editor</h2>
+        <div id="authState" class="mini">Not logged in</div>
+      </div>
+
+      <div id="loginBox">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="coach@email.com" />
+        <label>Password</label>
+        <input id="password" type="password" placeholder="password" />
+        <div class="btnrow">
+          <button id="loginBtn">Log in</button>
+          <button id="logoutBtn" type="button" disabled style="opacity:.6;">(Logout here)</button>
+        </div>
+        <div class="mini">
+          Logins are handled by Supabase Auth. Your database must have RLS enabled. :contentReference[oaicite:6]{index=6}
+        </div>
+      </div>
+
+      <div id="appBox" style="display:none;">
+        <div class="btnrow">
+          <button id="logoutBtn2" onclick="document.getElementById('logoutBtnHidden').click()" style="display:none;">Logout</button>
+          <button id="logoutBtnHidden" type="button" style="display:none;"></button>
+        </div>
+
+        <label>Player Name</label>
+        <input id="name" type="text" value="Kyle Higgins" />
+
+        <label>Age Group</label>
+        <input id="age" type="text" value="U12" />
+
+        <label>Position</label>
+        <input id="pos" type="text" value="LB / LW / ST" />
+
+        <hr style="margin:14px 0; border:none; border-top:1px solid #eee;" />
+
+        <h3 style="margin:0 0 6px 0;">Radar Stats (0–100)</h3>
+
+        <label>Passing</label>
+        <input id="passing" type="number" min="0" max="100" value="75" />
+
+        <label>Control</label>
+        <input id="control" type="number" min="0" max="100" value="85" />
+
+        <label>Dribbling</label>
+        <input id="dribbling" type="number" min="0" max="100" value="80" />
+
+        <label>Defending</label>
+        <input id="defending" type="number" min="0" max="100" value="75" />
+
+        <label>Speed</label>
+        <input id="speed" type="number" min="0" max="100" value="85" />
+
+        <label>Effort</label>
+        <input id="effort" type="number" min="0" max="100" value="85" />
+
+        <label>Coach Comment</label>
+        <textarea id="comment">Great attitude and effort all season.</textarea>
+
+        <div class="btnrow">
+          <button id="saveBtn">Save Player</button>
+          <button id="newBtn">New / Clear</button>
+        </div>
+
+        <label style="margin-top:14px;">Load Saved Player</label>
+        <select id="loadSelect">
+          <option value="">-- choose a saved player --</option>
+        </select>
+
+        <div class="btnrow">
+          <button id="printBtn">Print / Save PDF</button>
+          <button id="logoutBtn" type="button">Log out</button>
+        </div>
+
+        <div class="mini">
+          Tip: For child privacy, keep to first names / initials.
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: REPORT CARD -->
+    <div class="card">
+      <h1 id="cardName">Kyle Higgins</h1>
+      <p id="cardInfo">Age Group: U12 | Position: LB / LW / ST</p>
+
+      <div class="row">
+        <div class="box"><canvas id="radar"></canvas></div>
+        <div class="box"><canvas id="bars"></canvas></div>
+      </div>
+
+      <h3 style="margin-top:16px;">Coach Comment</h3>
+      <p id="cardComment">Great attitude and effort all season.</p>
+    </div>
+  </div>
+
+  <!-- Tiny hack: the module script above attaches to #logoutBtn, but we have two logout buttons.
+       This keeps it simple: -->
+  <script>
+    // If appBox visible, "Log out" button exists; just trigger the first logout listener.
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.id === "logoutBtn") {
+        // no-op - handled inside module
+      }
+    });
+  </script>
+</body>
+</html>

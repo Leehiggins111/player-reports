@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Player Report Cards</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; padding:20px; }
+    .wrap { max-width:1100px; margin:auto; display:flex; gap:20px; }
+    .panel, .card { background:#fff; padding:16px; border-radius:10px; }
+    .panel { width:360px; }
+    .card { flex:1; }
+    label { font-size:13px; display:block; margin-top:10px; }
+    input, textarea, select, button {
+      width:100%; padding:8px; margin-top:5px; box-sizing:border-box;
+    }
+    button { cursor:pointer; }
+    .row { display:flex; gap:16px; margin-top:16px; }
+    .box { flex:1; }
+    .hidden { display:none; }
+  </style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <h2>Coach Login</h2>
+    <div id="status">Not logged in</div>
+
+    <label>Email</label>
+    <input id="email" type="email" />
+
+    <label>Password</label>
+    <input id="password" type="password" />
+
+    <button id="loginBtn" type="button">Log in</button>
+    <button id="logoutBtn" type="button" class="hidden">Log out</button>
+
+    <hr>
+
+    <div id="editor" class="hidden">
+      <label>Player Name</label>
+      <input id="name" />
+
+      <label>Age Group</label>
+      <input id="age" />
+
+      <label>Position</label>
+      <input id="pos" />
+
+      <label>Passing</label>
+      <input id="passing" type="number" min="0" max="100" value="0" />
+
+      <label>Control</label>
+      <input id="control" type="number" min="0" max="100" value="0" />
+
+      <label>Dribbling</label>
+      <input id="dribbling" type="number" min="0" max="100" value="0" />
+
+      <label>Defending</label>
+      <input id="defending" type="number" min="0" max="100" value="0" />
+
+      <label>Speed</label>
+      <input id="speed" type="number" min="0" max="100" value="0" />
+
+      <label>Effort</label>
+      <input id="effort" type="number" min="0" max="100" value="0" />
+
+      <label>Coach Comment</label>
+      <textarea id="comment"></textarea>
+
+      <button id="saveBtn" type="button">Save Player</button>
+
+      <label>Load Player</label>
+      <select id="loadSelect">
+        <option value="">-- choose --</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- RIGHT CARD -->
+  <div class="card">
+    <h1 id="cardName">Unnamed Player</h1>
+    <p id="cardInfo"></p>
+
+    <div class="row">
+      <div class="box"><canvas id="radar"></canvas></div>
+      <div class="box"><canvas id="bars"></canvas></div>
+    </div>
+
+    <h3>Coach Comment</h3>
+    <p id="cardComment"></p>
+  </div>
+
+</div>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  // 🔴 REPLACE THESE WITH YOUR OWN VALUES
+  const SUPABASE_URL = "https://wzqxgudtgveumnqeowvn.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const $ = id => document.getElementById(id);
+  const num = id => Number($(id).value || 0);
+
+  // Charts
+  const radar = new Chart($("radar"), {
+    type:"radar",
+    data:{
+      labels:["Passing","Control","Dribbling","Defending","Speed","Effort"],
+      datasets:[{ data:[0,0,0,0,0,0] }]
+    },
+    options:{ scales:{ r:{ min:0, max:100 } }, plugins:{ legend:{ display:false } } }
+  });
+
+  const bars = new Chart($("bars"), {
+    type:"bar",
+    data:{
+      labels:["Passing","Speed","Effort"],
+      datasets:[{ data:[0,0,0] }]
+    },
+    options:{ indexAxis:"y", scales:{ x:{ min:0, max:100 } }, plugins:{ legend:{ display:false } } }
+  });
+
+  function updateCard() {
+    $("cardName").textContent = $("name").value || "Unnamed Player";
+    $("cardInfo").textContent = `Age Group: ${$("age").value} | Position: ${$("pos").value}`;
+    $("cardComment").textContent = $("comment").value;
+
+    radar.data.datasets[0].data = [
+      num("passing"), num("control"), num("dribbling"),
+      num("defending"), num("speed"), num("effort")
+    ];
+    radar.update();
+
+    bars.data.datasets[0].data = [
+      num("passing"), num("speed"), num("effort")
+    ];
+    bars.update();
+  }
+
+  ["name","age","pos","passing","control","dribbling","defending","speed","effort","comment"]
+    .forEach(id => $(id).addEventListener("input", updateCard));
+
+  $("loginBtn").onclick = async () => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: $("email").value,
+      password: $("password").value
+    });
+    if (error) return alert(error.message);
+    onAuth();
+  };
+
+  $("logoutBtn").onclick = async () => {
+    await supabase.auth.signOut();
+    onAuth();
+  };
+
+  $("saveBtn").onclick = async () => {
+    const { error } = await supabase.from("players").upsert({
+      name: $("name").value,
+      age_group: $("age").value,
+      position: $("pos").value,
+      stats: {
+        passing:num("passing"), control:num("control"), dribbling:num("dribbling"),
+        defending:num("defending"), speed:num("speed"), effort:num("effort")
+      },
+      comment: $("comment").value
+    }, { onConflict:"name" });
+
+    if (error) alert(error.message);
+    loadList();
+  };
+
+  async function loadList() {
+    const { data } = await supabase.from("players").select("name").order("name");
+    $("loadSelect").innerHTML = `<option value="">-- choose --</option>` +
+      (data||[]).map(p=>`<option>${p.name}</option>`).join("");
+  }
+
+  $("loadSelect").onchange = async e => {
+    if (!e.target.value) return;
+    const { data } = await supabase
+      .from("players").select("*").eq("name", e.target.value).single();
+
+    $("name").value = data.name;
+    $("age").value = data.age_group;
+    $("pos").value = data.position;
+    $("comment").value = data.comment || "";
+
+    Object.entries(data.stats||{}).forEach(([k,v]) => $(k).value = v);
+    updateCard();
+  };
+
+  async function onAuth() {
+    const { data } = await supabase.auth.getSession();
+    const loggedIn = !!data.session;
+
+    $("status").textContent = loggedIn ? "Logged in" : "Not logged in";
+    $("editor").classList.toggle("hidden", !loggedIn);
+    $("loginBtn").classList.toggle("hidden", loggedIn);
+    $("logoutBtn").classList.toggle("hidden", !loggedIn);
+
+    if (loggedIn) loadList();
+  }
+
+  onAuth();
+</script>
+
+</body>
+</html>
