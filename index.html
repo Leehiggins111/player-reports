@@ -8,10 +8,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* ✅ Theme variables (so team backgrounds are easy later) */
-    :root{
-      --bg1:#f2c94c;  /* yellow */
-      --bg2:#111111;  /* black */
+    /* Theme variables */
+    :root {
+      --bg1: #f2c94c;  /* yellow */
+      --bg2: #111111;  /* black */
     }
 
     .club-badge {
@@ -24,26 +24,96 @@
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
       color: #333;
+      margin: 0;
     }
 
-    .wrap { max-width:1100px; margin:auto; display:flex; gap:20px; padding:20px; }
-    .panel, .card { background:#fff; padding:20px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
-    .panel { width:380px; }
-    .card { flex:1; }
-    label { font-size:13px; display:block; margin-top:12px; font-weight:bold; }
-    input, textarea, select, button {
-      width:100%; padding:9px; margin-top:4px; box-sizing:border-box; border:1px solid #ccc; border-radius:4px;
+    .wrap {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      gap: 20px;
+      padding: 20px;
     }
-    input[type="range"] { width:70%; vertical-align:middle; }
-    .range-value { font-size:13px; margin-left:10px; font-weight:bold; color:#4CAF50; }
-    button { cursor:pointer; background:#4CAF50; color:white; border:none; padding:10px; border-radius:5px; margin-top:8px; }
-    button:hover { background:#45a049; }
-    .row { display:flex; gap:16px; margin:20px 0; }
-    .box { flex:1; min-height:300px; }
-    .hidden { display:none; }
-    fieldset { margin:16px 0; padding:12px; border:1px solid #ddd; border-radius:6px; }
-    legend { font-weight:bold; color:#333; }
-    h3 { margin-top:24px; color:#111; }
+
+    .panel, .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .panel { width: 380px; }
+    .card { flex: 1; }
+
+    label {
+      font-size: 13px;
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      padding: 9px;
+      margin-top: 4px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    input[type="range"] {
+      width: 70%;
+      vertical-align: middle;
+    }
+
+    .range-value {
+      font-size: 13px;
+      margin-left: 10px;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+
+    button {
+      cursor: pointer;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 8px;
+    }
+
+    button:hover { background: #45a049; }
+
+    .row {
+      display: flex;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .box {
+      flex: 1;
+      min-height: 300px;
+    }
+
+    .hidden { display: none; }
+
+    fieldset {
+      margin: 16px 0;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    legend {
+      font-weight: bold;
+      color: #333;
+    }
+
+    h3 {
+      margin-top: 24px;
+      color: #111;
+    }
   </style>
 </head>
 
@@ -69,10 +139,11 @@
 
     <div id="editor" class="hidden">
 
-      <!-- ✅ NEW: Team dropdown (single team for now) -->
+      <!-- Team selection -->
       <label>Team</label>
       <select id="team">
         <option value="livi">Livingston</option>
+        <!-- Add more teams later e.g. <option value="celtic">Celtic</option> -->
       </select>
 
       <label>Date of Report</label>
@@ -202,34 +273,30 @@
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // ✅ Put YOUR values back in here
-  const SUPABASE_URL = https://wzqxgudtgveumnqeowvn.supabase.co;
-  const SUPABASE_KEY = sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI;
+  // Your Supabase credentials (keep these private!)
+  const SUPABASE_URL  = "https://wzqxgudtgveumnqeowvn.supabase.co";
+  const SUPABASE_KEY  = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const $ = id => document.getElementById(id);
   const num = id => Number($(id)?.value || 0);
 
-  // ✅ NEW: Single-team theme config (test mode)
+  // Team theme config
   const TEAMS = {
-    livi: { badge: "badge.jpg", bg1:"#f2c94c", bg2:"#111111" }
+    livi: { badge: "badge.jpg", bg1: "#f2c94c", bg2: "#111111" }
+    // Add more: celtic: { badge: "celtic-badge.png", bg1: "#009933", bg2: "#ffffff" }
   };
 
-  function applyTeam(teamKey){
+  function applyTeam(teamKey) {
     const t = TEAMS[teamKey] || TEAMS.livi;
-
-    // background
     document.documentElement.style.setProperty("--bg1", t.bg1);
     document.documentElement.style.setProperty("--bg2", t.bg2);
-
-    // badge
-    const badgeEl = document.querySelector(".club-badge");
+    const badgeEl = $(".club-badge");
     if (badgeEl) badgeEl.src = t.badge;
   }
 
-  // ─────────────── Charts ───────────────
-
+  // Charts
   const radar = new Chart($("radar"), {
     type: "radar",
     data: {
@@ -266,8 +333,7 @@
     }
   });
 
-  // ─────────────── Update Functions ───────────────
-
+  // Update preview card + charts + averages
   function updateCard() {
     $("cardName").textContent = $("name").value || "Unnamed Player";
     $("cardInfo").textContent = `Age Group: ${$("age").value} | Position: ${$("pos").value}`;
@@ -315,7 +381,7 @@
     pillarRadar.update();
   }
 
-  // Live updates for all inputs
+  // Live updates
   ["team","name","age","pos","reportDate","maturation","passing","control","dribbling","defending","speed","effort",
    "shooting","heading","receiving","crossing","positioning","decisionMaking","vision","offBall","pressing","tacticalAwareness",
    "agility","endurance","strength","balance","concentration","composure","teamwork","coachability","resilience","comment"]
@@ -324,12 +390,7 @@
       if (el) el.addEventListener("input", updateCard);
     });
 
-  // ✅ NEW: Team dropdown should trigger theme change
-  $("team")?.addEventListener("change", () => {
-    applyTeam($("team").value);
-  });
-
-  // Range live value display
+  // Range value display
   document.querySelectorAll('input[type="range"]').forEach(input => {
     const valSpan = $(input.id + "Val");
     if (valSpan) {
@@ -339,7 +400,12 @@
     }
   });
 
-  // ─────────────── Supabase Auth & Data ───────────────
+  // Team change → theme
+  $("team")?.addEventListener("change", () => {
+    applyTeam($("team").value);
+  });
+
+  // ─────────────── Supabase ───────────────
 
   $("loginBtn").onclick = async () => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -385,7 +451,6 @@
       stats,
       averages,
       comment: $("comment").value
-      // ✅ We are NOT saving team yet (test mode)
     }, { onConflict: "name" });
 
     if (error) alert(error.message);
@@ -432,7 +497,6 @@
 
     if (loggedIn) loadList();
 
-    // ✅ Apply team theme once UI exists (safe even if not logged in)
     applyTeam($("team")?.value || "livi");
   }
 
