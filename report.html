@@ -26,7 +26,6 @@
     h1{ margin:0; font-size:2.1rem; }
     .meta{ color:#444; margin-top:8px; font-size:1rem; }
     .meta p{ margin:5px 0; }
-
     .actions{ display:flex; gap:10px; margin-top:16px; }
     button{
       cursor:pointer;
@@ -38,7 +37,6 @@
       font-weight:bold;
     }
     button:hover{ background:#1857b5; }
-
     h2{
       margin-top:32px;
       margin-bottom:10px;
@@ -46,7 +44,6 @@
       padding-top:20px;
       font-size:1.4rem;
     }
-
     ul{
       margin:8px 0 0 20px;
       padding-left:0;
@@ -63,7 +60,6 @@
       left:0;
       color:#555;
     }
-
     .grid{
       display:grid;
       grid-template-columns:1fr 1fr;
@@ -77,13 +73,11 @@
     }
     .chartWrap{ margin-top:12px; height:320px; }
     .muted{ color:#666; font-size:13px; }
-
     #notFound{
       color:#c53030;
       font-weight:500;
       margin-top:40px;
     }
-
     @media print{
       body{ background:#fff; }
       .page{
@@ -121,7 +115,6 @@
       <div class="card">
         <h2 style="margin-top:0;">Attendance</h2>
         <ul id="attendanceList"></ul>
-
         <div class="chartWrap">
           <canvas id="attendanceChart"></canvas>
         </div>
@@ -166,9 +159,11 @@
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // ✅ PUT THE SAME VALUES AS index.html
+  // ────────────────────────────────────────────────
+  // USE THE SAME VALUES AS THE COACH PAGE
   const SUPABASE_URL  = "https://wzqxgudtgveumnqeowvn.supabase.co";
-  const SUPABASE_KEY  = "Psb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
+  const SUPABASE_KEY  = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";  // ← your real anon key
+  // ────────────────────────────────────────────────
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -183,8 +178,8 @@
   }
 
   function qs(name){
-    const u = new URL(window.location.href);
-    return u.searchParams.get(name);
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
   }
 
   function li(text){
@@ -227,11 +222,13 @@
   });
 
   async function main(){
-    const name = qs("name");
+    let name = qs("name");
     if (!name){
       $("notFound").style.display = "block";
       return;
     }
+
+    name = decodeURIComponent(name).trim().toLowerCase();
 
     const { data, error } = await supabase
       .from("players")
@@ -240,6 +237,7 @@
       .single();
 
     if (error || !data){
+      console.error("Supabase error:", error);
       $("notFound").style.display = "block";
       return;
     }
@@ -247,7 +245,7 @@
     const stats = data.stats || {};
     const avgs = data.averages || {};
 
-    $("pName").textContent = data.name || "Player Report";
+    $("pName").textContent = data.name || "Player Report";  // shows original casing if saved that way
     $("pInfo").textContent = `Age Group: ${data.age_group || ""} | Position: ${data.position || ""}`;
 
     let niceDate = "";
