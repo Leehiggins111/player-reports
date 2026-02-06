@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Player Report (Parent)</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      background:#f5f6f8;
+      color:#111;
+    }
+    .page{
+      max-width:900px;
+      margin:24px auto;
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);
+      padding:32px;
+    }
+    .top{ display:flex; align-items:flex-start; gap:20px; }
+    .badge{ width:90px; height:auto; flex:0 0 auto; }
+    h1{ margin:0; font-size:2.1rem; }
+    .meta{ color:#444; margin-top:8px; font-size:1rem; }
+    .meta p{ margin:5px 0; }
+
+    .actions{ display:flex; gap:10px; margin-top:16px; }
+    button{
+      cursor:pointer;
+      padding:10px 16px;
+      border-radius:8px;
+      border:0;
+      background:#1f6feb;
+      color:#fff;
+      font-weight:bold;
+    }
+    button:hover{ background:#1857b5; }
+
+    h2{
+      margin-top:32px;
+      margin-bottom:10px;
+      border-top:1px solid #eee;
+      padding-top:20px;
+      font-size:1.4rem;
+    }
+
+    ul{
+      margin:8px 0 0 20px;
+      padding-left:0;
+      list-style:none;
+    }
+    ul li{
+      margin:6px 0;
+      position:relative;
+      padding-left:16px;
+    }
+    ul li::before{
+      content:"•";
+      position:absolute;
+      left:0;
+      color:#555;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+      margin-top:20px;
+    }
+    .card{
+      border:1px solid #eee;
+      border-radius:10px;
+      padding:16px;
+    }
+    .chartWrap{ margin-top:12px; height:320px; }
+    .muted{ color:#666; font-size:13px; }
+
+    #notFound{
+      color:#c53030;
+      font-weight:500;
+      margin-top:40px;
+    }
+
+    @media print{
+      body{ background:#fff; }
+      .page{
+        box-shadow:none;
+        margin:0;
+        border-radius:0;
+        padding:1.5cm 2cm;
+      }
+      .actions{ display:none; }
+      .chartWrap{ height:300px !important; page-break-inside:avoid; }
+      canvas{ max-width:100% !important; height:auto !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="top">
+      <img id="badge" class="badge" src="badge.jpg" alt="Club badge">
+      <div style="flex:1;">
+        <h1 id="pName">Player Report</h1>
+        <div class="meta">
+          <p id="pInfo"></p>
+          <p id="pDate"></p>
+        </div>
+
+        <div class="actions">
+          <button id="printBtn" type="button">Print / Save PDF</button>
+        </div>
+        <p class="muted">Tip: choose “Save as PDF” in the print dialog to keep a copy.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 style="margin-top:0;">Attendance</h2>
+        <ul id="attendanceList"></ul>
+
+        <div class="chartWrap">
+          <canvas id="attendanceChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Pillar Overview</h2>
+        <p class="muted">Hexagon shows balance across the 6 pillars.</p>
+        <div class="chartWrap">
+          <canvas id="pillarChart"></canvas>
+        </div>
+        <p><strong>Overall Development Score:</strong> <span id="overallScore">0</span>/100</p>
+      </div>
+    </div>
+
+    <h2>Technical (Avg: <span id="techAvg">0</span>/100)</h2>
+    <ul id="techList"></ul>
+
+    <h2>Finishing (Avg: <span id="finishAvg">0</span>/100)</h2>
+    <ul id="finishList"></ul>
+
+    <h2>Defending (Avg: <span id="defAvg">0</span>/100)</h2>
+    <ul id="defList"></ul>
+
+    <h2>Tactical (Avg: <span id="tactAvg">0</span>/100)</h2>
+    <ul id="tactList"></ul>
+
+    <h2>Physical (Avg: <span id="physAvg">0</span>/100)</h2>
+    <ul id="physList"></ul>
+
+    <h2>Psychological & Social (Avg: <span id="psychAvg">0</span>/100)</h2>
+    <ul id="psychList"></ul>
+
+    <h2>Coach Comment</h2>
+    <p id="commentText" style="white-space:pre-wrap; line-height:1.5;"></p>
+
+    <p id="notFound" style="display:none;">
+      Could not load player. Check the link or make sure the report was saved.
+    </p>
+  </div>
+
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+  // ✅ PUT THE SAME VALUES AS index.html
+  const SUPABASE_URL  = "https://wzqxgudtgveumnqeowvn.supabase.co";
+  const SUPABASE_KEY  = "Psb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const $ = (id) => document.getElementById(id);
+
+  function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+  function calcPct(att, tot){
+    tot = Number(tot || 0);
+    att = Number(att || 0);
+    if (tot <= 0) return 0;
+    return clamp(Math.round((att / tot) * 100), 0, 100);
+  }
+
+  function qs(name){
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name);
+  }
+
+  function li(text){
+    const el = document.createElement("li");
+    el.textContent = text;
+    return el;
+  }
+
+  function fillList(listId, items, stats){
+    const ul = $(listId);
+    ul.innerHTML = "";
+    items.forEach(([key, label]) => {
+      const v = Number(stats?.[key] ?? 0);
+      ul.appendChild(li(`${label}: ${v}/100`));
+    });
+  }
+
+  $("printBtn").onclick = () => window.print();
+
+  const attendanceChart = new Chart($("attendanceChart"), {
+    type:"bar",
+    data:{ labels:["Training %","Games %","Overall %"], datasets:[{ data:[0,0,0] }] },
+    options:{
+      indexAxis:"y",
+      scales:{ x:{ min:0, max:100 } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+
+  const pillarChart = new Chart($("pillarChart"), {
+    type:"radar",
+    data:{
+      labels:["Technical","Tactical","Physical","Psych & Social","Finishing","Defending"],
+      datasets:[{ data:[0,0,0,0,0,0] }]
+    },
+    options:{
+      scales:{ r:{ min:0, max:100, ticks:{ stepSize:20 } } },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+
+  async function main(){
+    const name = qs("name");
+    if (!name){
+      $("notFound").style.display = "block";
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("players")
+      .select("*")
+      .eq("name", name)
+      .single();
+
+    if (error || !data){
+      $("notFound").style.display = "block";
+      return;
+    }
+
+    const stats = data.stats || {};
+    const avgs = data.averages || {};
+
+    $("pName").textContent = data.name || "Player Report";
+    $("pInfo").textContent = `Age Group: ${data.age_group || ""} | Position: ${data.position || ""}`;
+
+    let niceDate = "";
+    if (data.report_date) {
+      const d = new Date(data.report_date);
+      niceDate = d.toLocaleDateString("en-GB", {day:"numeric", month:"long", year:"numeric"});
+    }
+    $("pDate").textContent = niceDate ? `Report Date: ${niceDate}` : "";
+
+    $("overallScore").textContent = Number(avgs.overall ?? 0);
+    $("techAvg").textContent = Number(avgs.tech_avg ?? 0);
+    $("tactAvg").textContent = Number(avgs.tact_avg ?? 0);
+    $("physAvg").textContent = Number(avgs.phys_avg ?? 0);
+    $("psychAvg").textContent = Number(avgs.psych_avg ?? 0);
+    $("finishAvg").textContent = Number(avgs.finish_avg ?? 0);
+    $("defAvg").textContent = Number(avgs.def_avg ?? 0);
+
+    // Attendance
+    const trainAtt = Number(stats.trainAtt ?? 0);
+    const trainTot = Number(stats.trainTot ?? 0);
+    const gameAtt  = Number(stats.gameAtt ?? 0);
+    const gameTot  = Number(stats.gameTot ?? 0);
+
+    const trainPct = calcPct(trainAtt, trainTot);
+    const gamePct  = calcPct(gameAtt, gameTot);
+    const overallPct = calcPct(trainAtt + gameAtt, trainTot + gameTot);
+
+    const attendanceList = $("attendanceList");
+    attendanceList.innerHTML = "";
+    attendanceList.appendChild(li(`Training: ${trainAtt}/${trainTot} (${trainPct}%)`));
+    attendanceList.appendChild(li(`Games: ${gameAtt}/${gameTot} (${gamePct}%)`));
+    attendanceList.appendChild(li(`Overall: ${trainAtt + gameAtt}/${trainTot + gameTot} (${overallPct}%)`));
+
+    attendanceChart.data.datasets[0].data = [trainPct, gamePct, overallPct];
+    attendanceChart.update();
+
+    pillarChart.data.datasets[0].data = [
+      Number(avgs.tech_avg ?? 0),
+      Number(avgs.tact_avg ?? 0),
+      Number(avgs.phys_avg ?? 0),
+      Number(avgs.psych_avg ?? 0),
+      Number(avgs.finish_avg ?? 0),
+      Number(avgs.def_avg ?? 0),
+    ];
+    pillarChart.update();
+
+    fillList("techList", [
+      ["passing","Passing"],
+      ["control","Control / First Touch"],
+      ["dribbling","Dribbling / Manipulation"],
+      ["receiving","Receiving / Trapping"],
+      ["crossing","Crossing / Delivery"]
+    ], stats);
+
+    fillList("finishList", [
+      ["finishing","Finishing / 1v1"],
+      ["shotPower","Shot Power"],
+      ["shotAccuracy","Shot Accuracy"],
+      ["weakFoot","Weak Foot"],
+      ["boxComposure","Composure in the Box"]
+    ], stats);
+
+    fillList("defList", [
+      ["def1v1","1v1 Defending"],
+      ["tackling","Tackling"],
+      ["intercepting","Intercepting"],
+      ["defPositioning","Defensive Positioning"],
+      ["aerialDuels","Aerial Duels / Heading"]
+    ], stats);
+
+    fillList("tactList", [
+      ["positioning","Tactical Positioning"],
+      ["decisionMaking","Decision Making"],
+      ["vision","Vision / Game Reading"],
+      ["offBall","Off-the-Ball Movement"],
+      ["pressing","Pressing / Recovery"],
+      ["tacticalAwareness","Tactical Awareness"]
+    ], stats);
+
+    fillList("physList", [
+      ["speed","Speed / Acceleration"],
+      ["agility","Agility / Change of Direction"],
+      ["endurance","Endurance / Stamina"],
+      ["strength","Strength / Power"],
+      ["balance","Balance / Coordination"]
+    ], stats);
+
+    fillList("psychList", [
+      ["effort","Effort / Work Ethic"],
+      ["concentration","Concentration / Focus"],
+      ["composure","Composure under Pressure"],
+      ["teamwork","Teamwork / Communication"],
+      ["coachability","Coachability / Attitude"],
+      ["resilience","Resilience / Determination"]
+    ], stats);
+
+    $("commentText").textContent = data.comment || "No comment provided.";
+  }
+
+  main();
+</script>
+</body>
+</html>

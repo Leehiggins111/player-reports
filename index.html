@@ -2,123 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Player Report Cards</title>
+  <title>Player Report Cards (Coach)</title>
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
 
   <style>
-    /* Theme variables */
-    :root {
-      --bg1: #f2c94c;  /* yellow */
-      --bg2: #111111;  /* black */
-    }
+    :root { --bg1:#f2c94c; --bg2:#111111; }
 
-    .club-badge {
-      width: 80px;
-      display: block;
-      margin-bottom: 10px;
-    }
-
-    body {
+    body{
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
-      color: #333;
-      margin: 0;
+      color:#333;
+      margin:0;
+      min-height:100vh;
     }
 
-    .wrap {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      gap: 20px;
-      padding: 20px;
+    .wrap{
+      max-width:1150px;
+      margin:auto;
+      display:flex;
+      gap:20px;
+      padding:20px;
     }
 
-    .panel, .card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    .panel,.card{
+      background:#fff;
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
     }
 
-    .panel { width: 380px; }
-    .card { flex: 1; }
+    .panel{ width:390px; flex-shrink:0; }
+    .card{ flex:1; }
 
-    label {
-      font-size: 13px;
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
+    label{ font-size:13px; display:block; margin-top:12px; font-weight:bold; }
+
+    input, textarea, select, button{
+      width:100%;
+      padding:9px;
+      margin-top:4px;
+      box-sizing:border-box;
+      border:1px solid #ccc;
+      border-radius:6px;
     }
 
-    input, textarea, select, button {
-      width: 100%;
-      padding: 9px;
-      margin-top: 4px;
-      box-sizing: border-box;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    input[type="range"]{ width:70%; vertical-align:middle; }
+    .range-value{ font-size:13px; margin-left:10px; font-weight:bold; color:#2e7d32; }
+
+    button{
+      cursor:pointer;
+      background:#2e7d32;
+      color:white;
+      border:none;
+      padding:10px;
+      border-radius:8px;
+      margin-top:8px;
+      font-weight:bold;
     }
+    button:hover{ background:#256528; }
 
-    input[type="range"] {
-      width: 70%;
-      vertical-align: middle;
+    .btn-secondary{ background:#1f6feb; }
+    .btn-secondary:hover{ background:#1857b5; }
+
+    .row{ display:flex; gap:16px; margin:20px 0; }
+    .box{ flex:1; min-height:280px; }
+
+    .hidden{ display:none; }
+
+    fieldset{
+      margin:16px 0;
+      padding:12px;
+      border:1px solid #ddd;
+      border-radius:10px;
     }
+    legend{ font-weight:bold; color:#333; }
 
-    .range-value {
-      font-size: 13px;
-      margin-left: 10px;
-      font-weight: bold;
-      color: #4CAF50;
-    }
+    .club-badge{ width:85px; display:block; margin-bottom:10px; }
+    .muted{ color:#666; font-size:13px; }
 
-    button {
-      cursor: pointer;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 8px;
-    }
-
-    button:hover { background: #45a049; }
-
-    .row {
-      display: flex;
-      gap: 16px;
-      margin: 20px 0;
-    }
-
-    .box {
-      flex: 1;
-      min-height: 300px;
-    }
-
-    .hidden { display: none; }
-
-    fieldset {
-      margin: 16px 0;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
-
-    legend {
-      font-weight: bold;
-      color: #333;
-    }
-
-    h3 {
-      margin-top: 24px;
-      color: #111;
+    @media print{
+      body{ background:white !important; }
+      .wrap > *:not(.card), button, .hidden{ display:none !important; }
+      .card{ box-shadow:none; border-radius:0; padding:0; width:100%; }
     }
   </style>
 </head>
 
 <body>
-
 <div class="wrap">
 
   <!-- LEFT PANEL -->
@@ -126,10 +96,10 @@
     <h2>Coach Login</h2>
     <div id="status">Not logged in</div>
 
-    <label>Email</label>
+    <label for="email">Email</label>
     <input id="email" type="email" />
 
-    <label>Password</label>
+    <label for="password">Password</label>
     <input id="password" type="password" />
 
     <button id="loginBtn" type="button">Log in</button>
@@ -139,102 +109,161 @@
 
     <div id="editor" class="hidden">
 
-      <!-- Team selection -->
-      <label>Team</label>
+      <label for="team">Team</label>
       <select id="team">
         <option value="livi">Livingston</option>
-        <!-- Add more teams later e.g. <option value="celtic">Celtic</option> -->
       </select>
 
-      <label>Date of Report</label>
+      <label for="reportDate">Date of Report</label>
       <input id="reportDate" type="date" />
 
-      <label>Player Name</label>
-      <input id="name" />
+      <label for="name">Player Name</label>
+      <input id="name" required />
 
-      <label>Age Group</label>
+      <label for="age">Age Group</label>
       <input id="age" />
 
-      <label>Position</label>
+      <label for="pos">Position</label>
       <input id="pos" />
 
-      <label>Maturation Stage</label>
-      <select id="maturation">
-        <option value="">-- Select --</option>
-        <option value="Early">Early</option>
-        <option value="Average">Average</option>
-        <option value="Late">Late</option>
-      </select>
+      <!-- Attendance -->
+      <fieldset>
+        <legend>Attendance</legend>
+
+        <label for="trainAtt">Training attended</label>
+        <input id="trainAtt" type="number" min="0" value="0" />
+
+        <label for="trainTot">Total training sessions</label>
+        <input id="trainTot" type="number" min="0" value="0" />
+
+        <label for="gameAtt">Games attended</label>
+        <input id="gameAtt" type="number" min="0" value="0" />
+
+        <label for="gameTot">Total games</label>
+        <input id="gameTot" type="number" min="0" value="0" />
+      </fieldset>
 
       <!-- Technical -->
       <fieldset>
         <legend>Technical Skills (Avg: <span id="techAvg">0</span>/100)</legend>
-        <label>Passing</label>
+        <label for="passing">Passing</label>
         <input type="range" id="passing" min="0" max="100" value="0" /><span id="passingVal" class="range-value">0</span>
-        <label>Control / First Touch</label>
+
+        <label for="control">Control / First Touch</label>
         <input type="range" id="control" min="0" max="100" value="0" /><span id="controlVal" class="range-value">0</span>
-        <label>Dribbling / Manipulation</label>
+
+        <label for="dribbling">Dribbling / Manipulation</label>
         <input type="range" id="dribbling" min="0" max="100" value="0" /><span id="dribblingVal" class="range-value">0</span>
-        <label>Shooting / Finishing</label>
-        <input type="range" id="shooting" min="0" max="100" value="0" /><span id="shootingVal" class="range-value">0</span>
-        <label>Heading / Aerial</label>
-        <input type="range" id="heading" min="0" max="100" value="0" /><span id="headingVal" class="range-value">0</span>
-        <label>Receiving / Trapping</label>
+
+        <label for="receiving">Receiving / Trapping</label>
         <input type="range" id="receiving" min="0" max="100" value="0" /><span id="receivingVal" class="range-value">0</span>
-        <label>Crossing / Delivery</label>
+
+        <label for="crossing">Crossing / Delivery</label>
         <input type="range" id="crossing" min="0" max="100" value="0" /><span id="crossingVal" class="range-value">0</span>
+      </fieldset>
+
+      <!-- Finishing -->
+      <fieldset>
+        <legend>Finishing (Avg: <span id="finishAvg">0</span>/100)</legend>
+        <label for="finishing">Finishing / 1v1</label>
+        <input type="range" id="finishing" min="0" max="100" value="0" /><span id="finishingVal" class="range-value">0</span>
+
+        <label for="shotPower">Shot Power</label>
+        <input type="range" id="shotPower" min="0" max="100" value="0" /><span id="shotPowerVal" class="range-value">0</span>
+
+        <label for="shotAccuracy">Shot Accuracy</label>
+        <input type="range" id="shotAccuracy" min="0" max="100" value="0" /><span id="shotAccuracyVal" class="range-value">0</span>
+
+        <label for="weakFoot">Weak Foot</label>
+        <input type="range" id="weakFoot" min="0" max="100" value="0" /><span id="weakFootVal" class="range-value">0</span>
+
+        <label for="boxComposure">Composure in the Box</label>
+        <input type="range" id="boxComposure" min="0" max="100" value="0" /><span id="boxComposureVal" class="range-value">0</span>
+      </fieldset>
+
+      <!-- Defending -->
+      <fieldset>
+        <legend>Defending (Avg: <span id="defAvg">0</span>/100)</legend>
+        <label for="def1v1">1v1 Defending</label>
+        <input type="range" id="def1v1" min="0" max="100" value="0" /><span id="def1v1Val" class="range-value">0</span>
+
+        <label for="tackling">Tackling</label>
+        <input type="range" id="tackling" min="0" max="100" value="0" /><span id="tacklingVal" class="range-value">0</span>
+
+        <label for="intercepting">Intercepting</label>
+        <input type="range" id="intercepting" min="0" max="100" value="0" /><span id="interceptingVal" class="range-value">0</span>
+
+        <label for="defPositioning">Defensive Positioning</label>
+        <input type="range" id="defPositioning" min="0" max="100" value="0" /><span id="defPositioningVal" class="range-value">0</span>
+
+        <label for="aerialDuels">Aerial Duels / Heading</label>
+        <input type="range" id="aerialDuels" min="0" max="100" value="0" /><span id="aerialDuelsVal" class="range-value">0</span>
       </fieldset>
 
       <!-- Tactical -->
       <fieldset>
         <legend>Tactical Intelligence (Avg: <span id="tactAvg">0</span>/100)</legend>
-        <label>Positioning</label>
+        <label for="positioning">Tactical Positioning</label>
         <input type="range" id="positioning" min="0" max="100" value="0" /><span id="positioningVal" class="range-value">0</span>
-        <label>Decision Making</label>
+
+        <label for="decisionMaking">Decision Making</label>
         <input type="range" id="decisionMaking" min="0" max="100" value="0" /><span id="decisionMakingVal" class="range-value">0</span>
-        <label>Vision / Game Reading</label>
+
+        <label for="vision">Vision / Game Reading</label>
         <input type="range" id="vision" min="0" max="100" value="0" /><span id="visionVal" class="range-value">0</span>
-        <label>Off-the-Ball Movement</label>
+
+        <label for="offBall">Off-the-Ball Movement</label>
         <input type="range" id="offBall" min="0" max="100" value="0" /><span id="offBallVal" class="range-value">0</span>
-        <label>Pressing / Recovery</label>
+
+        <label for="pressing">Pressing / Recovery</label>
         <input type="range" id="pressing" min="0" max="100" value="0" /><span id="pressingVal" class="range-value">0</span>
-        <label>Tactical Awareness</label>
+
+        <label for="tacticalAwareness">Tactical Awareness</label>
         <input type="range" id="tacticalAwareness" min="0" max="100" value="0" /><span id="tacticalAwarenessVal" class="range-value">0</span>
       </fieldset>
 
       <!-- Physical -->
       <fieldset>
         <legend>Physical Attributes (Avg: <span id="physAvg">0</span>/100)</legend>
-        <label>Speed / Acceleration</label>
+        <label for="speed">Speed / Acceleration</label>
         <input type="range" id="speed" min="0" max="100" value="0" /><span id="speedVal" class="range-value">0</span>
-        <label>Agility / Change of Direction</label>
+
+        <label for="agility">Agility / Change of Direction</label>
         <input type="range" id="agility" min="0" max="100" value="0" /><span id="agilityVal" class="range-value">0</span>
-        <label>Endurance / Stamina</label>
+
+        <label for="endurance">Endurance / Stamina</label>
         <input type="range" id="endurance" min="0" max="100" value="0" /><span id="enduranceVal" class="range-value">0</span>
-        <label>Strength / Power</label>
+
+        <label for="strength">Strength / Power</label>
         <input type="range" id="strength" min="0" max="100" value="0" /><span id="strengthVal" class="range-value">0</span>
-        <label>Balance / Coordination</label>
+
+        <label for="balance">Balance / Coordination</label>
         <input type="range" id="balance" min="0" max="100" value="0" /><span id="balanceVal" class="range-value">0</span>
       </fieldset>
 
-      <!-- Psychological & Social -->
+      <!-- Psych -->
       <fieldset>
         <legend>Psychological & Social (Avg: <span id="psychAvg">0</span>/100)</legend>
-        <label>Effort / Work Ethic</label>
+        <label for="effort">Effort / Work Ethic</label>
         <input type="range" id="effort" min="0" max="100" value="0" /><span id="effortVal" class="range-value">0</span>
-        <label>Concentration / Focus</label>
+
+        <label for="concentration">Concentration / Focus</label>
         <input type="range" id="concentration" min="0" max="100" value="0" /><span id="concentrationVal" class="range-value">0</span>
-        <label>Composure under Pressure</label>
+
+        <label for="composure">Composure under Pressure</label>
         <input type="range" id="composure" min="0" max="100" value="0" /><span id="composureVal" class="range-value">0</span>
-        <label>Teamwork / Communication</label>
+
+        <label for="teamwork">Teamwork / Communication</label>
         <input type="range" id="teamwork" min="0" max="100" value="0" /><span id="teamworkVal" class="range-value">0</span>
-        <label>Coachability / Attitude</label>
+
+        <label for="coachability">Coachability / Attitude</label>
         <input type="range" id="coachability" min="0" max="100" value="0" /><span id="coachabilityVal" class="range-value">0</span>
-        <label>Resilience / Determination</label>
+
+        <label for="resilience">Resilience / Determination</label>
         <input type="range" id="resilience" min="0" max="100" value="0" /><span id="resilienceVal" class="range-value">0</span>
       </fieldset>
 
-      <label>Coach Comment</label>
+      <label for="comment">Coach Comment</label>
       <textarea id="comment" rows="5"></textarea>
 
       <div style="margin:20px 0; font-size:18px; font-weight:bold;">
@@ -242,29 +271,32 @@
       </div>
 
       <button id="saveBtn" type="button">Save Player</button>
+      <button id="generateBtn" type="button" class="btn-secondary">Generate Parent Report</button>
 
-      <label>Load Player</label>
+      <label for="loadSelect">Load Player</label>
       <select id="loadSelect">
         <option value="">-- choose --</option>
       </select>
+
+      <p class="muted" style="margin-top:10px;">
+        Generate Parent Report opens a clean printable page (no login shown).
+      </p>
     </div>
   </div>
 
-  <!-- RIGHT CARD -->
+  <!-- RIGHT CARD (Preview) -->
   <div class="card">
-    <img src="badge.jpg" alt="Club badge" class="club-badge">
+    <img src="badge.jpg" alt="Livingston FC club badge" class="club-badge">
     <h1 id="cardName">Unnamed Player</h1>
     <p id="cardInfo"></p>
+    <p id="cardDate" class="muted"></p>
 
     <div class="row">
-      <div class="box"><canvas id="radar"></canvas></div>
-      <div class="box"><canvas id="bars"></canvas></div>
+      <div class="box"><canvas id="attendancePreview"></canvas></div>
+      <div class="box"><canvas id="pillarPreview"></canvas></div>
     </div>
 
-    <h3>Pillar Overview (Holistic Balance)</h3>
-    <canvas id="pillarRadar" style="max-height:400px;"></canvas>
-
-    <h3>Coach Comment</h3>
+    <h3 style="margin-top:0;">Coach Comment</h3>
     <p id="cardComment"></p>
   </div>
 
@@ -273,139 +305,202 @@
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // Your Supabase credentials (keep these private!)
+  // ✅ PUT YOUR REAL VALUES HERE (and also in report.html)
   const SUPABASE_URL  = "https://wzqxgudtgveumnqeowvn.supabase.co";
   const SUPABASE_KEY  = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const $ = id => document.getElementById(id);
-  const num = id => Number($(id)?.value || 0);
+  const $ = (id) => document.getElementById(id);
+  const num = (id) => Number($(id)?.value ?? 0);
 
-  // Team theme config
   const TEAMS = {
-    livi: { badge: "badge.jpg", bg1: "#f2c94c", bg2: "#111111" }
-    // Add more: celtic: { badge: "celtic-badge.png", bg1: "#009933", bg2: "#ffffff" }
+    livi: { badge:"badge.jpg", bg1:"#f2c94c", bg2:"#111111" }
   };
 
-  function applyTeam(teamKey) {
+  function applyTeam(teamKey){
     const t = TEAMS[teamKey] || TEAMS.livi;
     document.documentElement.style.setProperty("--bg1", t.bg1);
     document.documentElement.style.setProperty("--bg2", t.bg2);
-    const badgeEl = $(".club-badge");
+    const badgeEl = document.querySelector(".club-badge");
     if (badgeEl) badgeEl.src = t.badge;
   }
 
-  // Charts
-  const radar = new Chart($("radar"), {
-    type: "radar",
-    data: {
-      labels: ["Passing","Control","Dribbling","Defending","Speed","Effort"],
-      datasets: [{ data: [0,0,0,0,0,0], backgroundColor: "rgba(76,175,80,0.2)", borderColor: "#4CAF50" }]
-    },
-    options: { scales: { r: { min:0, max:100 } }, plugins: { legend: { display: false } } }
-  });
-
-  const bars = new Chart($("bars"), {
-    type: "bar",
-    data: {
-      labels: ["Passing","Speed","Effort"],
-      datasets: [{ data: [0,0,0], backgroundColor: "#4CAF50" }]
-    },
-    options: { indexAxis: "y", scales: { x: { min:0, max:100 } }, plugins: { legend: { display: false } } }
-  });
-
-  const pillarRadar = new Chart($("pillarRadar"), {
-    type: "radar",
-    data: {
-      labels: ["Technical", "Tactical", "Physical", "Psych & Social"],
-      datasets: [{
-        label: "Pillar Averages",
-        data: [0,0,0,0],
-        backgroundColor: "rgba(33,150,243,0.2)",
-        borderColor: "#2196F3",
-        borderWidth: 2
-      }]
-    },
-    options: {
-      scales: { r: { min:0, max:100, ticks: { stepSize: 20 } } },
-      plugins: { legend: { display: false } }
-    }
-  });
-
-  // Update preview card + charts + averages
-  function updateCard() {
-    $("cardName").textContent = $("name").value || "Unnamed Player";
-    $("cardInfo").textContent = `Age Group: ${$("age").value} | Position: ${$("pos").value}`;
-    $("cardComment").textContent = $("comment").value;
-
-    radar.data.datasets[0].data = [
-      num("passing"), num("control"), num("dribbling"),
-      num("defending"), num("speed"), num("effort")
-    ];
-    radar.update();
-
-    bars.data.datasets[0].data = [
-      num("passing"), num("speed"), num("effort")
-    ];
-    bars.update();
-
-    calculateAverages();
+  function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+  function calcPct(att, tot){
+    tot = Number(tot || 0);
+    att = Number(att || 0);
+    if (tot <= 0) return 0;
+    return clamp(Math.round((att / tot) * 100), 0, 100);
   }
 
-  function calculateAverages() {
-    const techSum = num("passing") + num("control") + num("dribbling") + num("shooting") +
-                    num("heading") + num("receiving") + num("crossing");
-    const techAvg = Math.round(techSum / 7);
+  function refreshRangeSpans(){
+    document.querySelectorAll('input[type="range"]').forEach(input => {
+      const span = document.getElementById(input.id + "Val");
+      if (span) span.textContent = input.value;
+    });
+  }
+
+  const attendancePreview = new Chart($("attendancePreview"), {
+    type:"bar",
+    data:{ labels:["Training %","Games %","Overall %"], datasets:[{ data:[0,0,0] }] },
+    options:{ indexAxis:"y", scales:{ x:{ min:0, max:100 } }, plugins:{ legend:{ display:false } } }
+  });
+
+  const pillarPreview = new Chart($("pillarPreview"), {
+    type:"radar",
+    data:{ labels:["Technical","Tactical","Physical","Psych & Social","Finishing","Defending"], datasets:[{ data:[0,0,0,0,0,0] }] },
+    options:{ scales:{ r:{ min:0, max:100, ticks:{ stepSize:20 } } }, plugins:{ legend:{ display:false } } }
+  });
+
+  function calculateAverages(){
+    const techAvg   = Math.round((num("passing")+num("control")+num("dribbling")+num("receiving")+num("crossing"))/5);
+    const finishAvg = Math.round((num("finishing")+num("shotPower")+num("shotAccuracy")+num("weakFoot")+num("boxComposure"))/5);
+    const defAvg    = Math.round((num("def1v1")+num("tackling")+num("intercepting")+num("defPositioning")+num("aerialDuels"))/5);
+    const tactAvg   = Math.round((num("positioning")+num("decisionMaking")+num("vision")+num("offBall")+num("pressing")+num("tacticalAwareness"))/6);
+    const physAvg   = Math.round((num("speed")+num("agility")+num("endurance")+num("strength")+num("balance"))/5);
+    const psychAvg  = Math.round((num("effort")+num("concentration")+num("composure")+num("teamwork")+num("coachability")+num("resilience"))/6);
+
     $("techAvg").textContent = techAvg;
-
-    const tactSum = num("positioning") + num("decisionMaking") + num("vision") +
-                    num("offBall") + num("pressing") + num("tacticalAwareness");
-    const tactAvg = Math.round(tactSum / 6);
+    $("finishAvg").textContent = finishAvg;
+    $("defAvg").textContent = defAvg;
     $("tactAvg").textContent = tactAvg;
-
-    const physSum = num("speed") + num("agility") + num("endurance") +
-                    num("strength") + num("balance");
-    const physAvg = Math.round(physSum / 5);
     $("physAvg").textContent = physAvg;
-
-    const psychSum = num("effort") + num("concentration") + num("composure") +
-                     num("teamwork") + num("coachability") + num("resilience");
-    const psychAvg = Math.round(psychSum / 6);
     $("psychAvg").textContent = psychAvg;
 
-    const overall = Math.round((techAvg + tactAvg + physAvg + psychAvg) / 4);
+    const overall = Math.round((techAvg+finishAvg+defAvg+tactAvg+physAvg+psychAvg)/6);
     $("overallScore").textContent = overall;
 
-    pillarRadar.data.datasets[0].data = [techAvg, tactAvg, physAvg, psychAvg];
-    pillarRadar.update();
+    return { techAvg, finishAvg, defAvg, tactAvg, physAvg, psychAvg, overall };
   }
 
-  // Live updates
-  ["team","name","age","pos","reportDate","maturation","passing","control","dribbling","defending","speed","effort",
-   "shooting","heading","receiving","crossing","positioning","decisionMaking","vision","offBall","pressing","tacticalAwareness",
-   "agility","endurance","strength","balance","concentration","composure","teamwork","coachability","resilience","comment"]
-    .forEach(id => {
-      const el = $(id);
-      if (el) el.addEventListener("input", updateCard);
+  function updatePreview(){
+    const avgs = calculateAverages();
+
+    $("cardName").textContent = $("name").value || "Unnamed Player";
+    $("cardInfo").textContent = `Age Group: ${$("age").value} | Position: ${$("pos").value}`;
+    $("cardComment").textContent = $("comment").value || "";
+    $("cardDate").textContent = $("reportDate").value ? `Report Date: ${$("reportDate").value}` : "";
+
+    const trainPct = calcPct(num("trainAtt"), num("trainTot"));
+    const gamePct  = calcPct(num("gameAtt"), num("gameTot"));
+    const overallPct = calcPct(num("trainAtt")+num("gameAtt"), num("trainTot")+num("gameTot"));
+
+    attendancePreview.data.datasets[0].data = [trainPct, gamePct, overallPct];
+    attendancePreview.update();
+
+    pillarPreview.data.datasets[0].data = [avgs.techAvg,avgs.tactAvg,avgs.physAvg,avgs.psychAvg,avgs.finishAvg,avgs.defAvg];
+    pillarPreview.update();
+  }
+
+  const LIVE_IDS = [
+    "team","reportDate","name","age","pos","comment",
+    "trainAtt","trainTot","gameAtt","gameTot",
+    "passing","control","dribbling","receiving","crossing",
+    "finishing","shotPower","shotAccuracy","weakFoot","boxComposure",
+    "def1v1","tackling","intercepting","defPositioning","aerialDuels",
+    "positioning","decisionMaking","vision","offBall","pressing","tacticalAwareness",
+    "speed","agility","endurance","strength","balance",
+    "effort","concentration","composure","teamwork","coachability","resilience"
+  ];
+
+  LIVE_IDS.forEach(id => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      refreshRangeSpans();
+      if (id === "team") applyTeam($("team").value);
+      updatePreview();
     });
-
-  // Range value display
-  document.querySelectorAll('input[type="range"]').forEach(input => {
-    const valSpan = $(input.id + "Val");
-    if (valSpan) {
-      input.addEventListener("input", () => {
-        valSpan.textContent = input.value;
-      });
-    }
   });
 
-  // Team change → theme
-  $("team")?.addEventListener("change", () => {
+  async function savePlayer(){
+    const name = ($("name").value || "").trim();
+    if (!name) return { error:{ message:"Player Name is required." } };
+
+    const avgs = calculateAverages();
+
+    const stats = {
+      trainAtt:num("trainAtt"), trainTot:num("trainTot"),
+      gameAtt:num("gameAtt"), gameTot:num("gameTot"),
+
+      passing:num("passing"), control:num("control"), dribbling:num("dribbling"),
+      receiving:num("receiving"), crossing:num("crossing"),
+
+      finishing:num("finishing"), shotPower:num("shotPower"), shotAccuracy:num("shotAccuracy"),
+      weakFoot:num("weakFoot"), boxComposure:num("boxComposure"),
+
+      def1v1:num("def1v1"), tackling:num("tackling"), intercepting:num("intercepting"),
+      defPositioning:num("defPositioning"), aerialDuels:num("aerialDuels"),
+
+      positioning:num("positioning"), decisionMaking:num("decisionMaking"), vision:num("vision"),
+      offBall:num("offBall"), pressing:num("pressing"), tacticalAwareness:num("tacticalAwareness"),
+
+      speed:num("speed"), agility:num("agility"), endurance:num("endurance"),
+      strength:num("strength"), balance:num("balance"),
+
+      effort:num("effort"), concentration:num("concentration"), composure:num("composure"),
+      teamwork:num("teamwork"), coachability:num("coachability"), resilience:num("resilience")
+    };
+
+    const averages = {
+      tech_avg:avgs.techAvg, tact_avg:avgs.tactAvg, phys_avg:avgs.physAvg, psych_avg:avgs.psychAvg,
+      finish_avg:avgs.finishAvg, def_avg:avgs.defAvg, overall:avgs.overall
+    };
+
+    return await supabase.from("players").upsert({
+      name,
+      team:$("team").value || "livi",
+      age_group:$("age").value || "",
+      position:$("pos").value || "",
+      report_date:$("reportDate").value || "",
+      stats,
+      averages,
+      comment:$("comment").value || ""
+    }, { onConflict:"name" });
+  }
+
+  async function loadList(){
+    const { data } = await supabase.from("players").select("name").order("name");
+    $("loadSelect").innerHTML = `<option value="">-- choose --</option>` + (data||[]).map(p => `<option>${p.name}</option>`).join("");
+  }
+
+  $("saveBtn").onclick = async () => {
+    const { error } = await savePlayer();
+    if (error) alert(error.message);
+    else await loadList();
+  };
+
+  $("generateBtn").onclick = async () => {
+    const { error } = await savePlayer();
+    if (error) return alert(error.message);
+    await loadList();
+
+    const playerName = encodeURIComponent(($("name").value || "").trim());
+    window.open(`report.html?name=${playerName}`, "_blank");
+  };
+
+  $("loadSelect").onchange = async (e) => {
+    if (!e.target.value) return;
+
+    const { data, error } = await supabase.from("players").select("*").eq("name", e.target.value).single();
+    if (error || !data) return;
+
+    $("team").value = data.team || "livi";
     applyTeam($("team").value);
-  });
 
-  // ─────────────── Supabase ───────────────
+    $("reportDate").value = data.report_date || "";
+    $("name").value = data.name || "";
+    $("age").value = data.age_group || "";
+    $("pos").value = data.position || "";
+    $("comment").value = data.comment || "";
+
+    const s = data.stats || {};
+    Object.keys(s).forEach(k => { const el = $(k); if (el) el.value = s[k] ?? 0; });
+
+    refreshRangeSpans();
+    updatePreview();
+  };
 
   $("loginBtn").onclick = async () => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -421,72 +516,7 @@
     onAuth();
   };
 
-  $("saveBtn").onclick = async () => {
-    const stats = {
-      passing: num("passing"), control: num("control"), dribbling: num("dribbling"),
-      defending: num("defending"), speed: num("speed"), effort: num("effort"),
-      shooting: num("shooting"), heading: num("heading"), receiving: num("receiving"),
-      crossing: num("crossing"), positioning: num("positioning"), decisionMaking: num("decisionMaking"),
-      vision: num("vision"), offBall: num("offBall"), pressing: num("pressing"),
-      tacticalAwareness: num("tacticalAwareness"), agility: num("agility"), endurance: num("endurance"),
-      strength: num("strength"), balance: num("balance"), concentration: num("concentration"),
-      composure: num("composure"), teamwork: num("teamwork"), coachability: num("coachability"),
-      resilience: num("resilience")
-    };
-
-    const averages = {
-      tech_avg: Number($("techAvg").textContent),
-      tact_avg: Number($("tactAvg").textContent),
-      phys_avg: Number($("physAvg").textContent),
-      psych_avg: Number($("psychAvg").textContent),
-      overall: Number($("overallScore").textContent)
-    };
-
-    const { error } = await supabase.from("players").upsert({
-      name: $("name").value,
-      age_group: $("age").value,
-      position: $("pos").value,
-      report_date: $("reportDate").value,
-      maturation: $("maturation").value,
-      stats,
-      averages,
-      comment: $("comment").value
-    }, { onConflict: "name" });
-
-    if (error) alert(error.message);
-    else loadList();
-  };
-
-  async function loadList() {
-    const { data } = await supabase.from("players").select("name").order("name");
-    $("loadSelect").innerHTML = `<option value="">-- choose --</option>` +
-      (data||[]).map(p => `<option>${p.name}</option>`).join("");
-  }
-
-  $("loadSelect").onchange = async e => {
-    if (!e.target.value) return;
-    const { data } = await supabase
-      .from("players").select("*").eq("name", e.target.value).single();
-
-    if (!data) return;
-
-    $("reportDate").value = data.report_date || "";
-    $("name").value = data.name;
-    $("age").value = data.age_group;
-    $("pos").value = data.position;
-    $("maturation").value = data.maturation || "";
-    $("comment").value = data.comment || "";
-
-    const s = data.stats || {};
-    ["passing","control","dribbling","defending","speed","effort","shooting","heading","receiving","crossing",
-     "positioning","decisionMaking","vision","offBall","pressing","tacticalAwareness","agility","endurance",
-     "strength","balance","concentration","composure","teamwork","coachability","resilience"]
-      .forEach(k => { if ($(k)) $(k).value = s[k] ?? 0; });
-
-    updateCard();
-  };
-
-  async function onAuth() {
+  async function onAuth(){
     const { data } = await supabase.auth.getSession();
     const loggedIn = !!data.session;
 
@@ -495,13 +525,14 @@
     $("loginBtn").classList.toggle("hidden", loggedIn);
     $("logoutBtn").classList.toggle("hidden", !loggedIn);
 
-    if (loggedIn) loadList();
-
     applyTeam($("team")?.value || "livi");
+    refreshRangeSpans();
+    updatePreview();
+
+    if (loggedIn) await loadList();
   }
 
   onAuth();
 </script>
-
 </body>
 </html>
