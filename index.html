@@ -8,6 +8,7 @@
 
   <style>
     :root { --bg1:#f2c94c; --bg2:#111111; }
+
     body{
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
@@ -15,6 +16,7 @@
       margin:0;
       min-height:100vh;
     }
+
     .wrap{
       max-width:1150px;
       margin:auto;
@@ -22,15 +24,19 @@
       gap:20px;
       padding:20px;
     }
+
     .panel,.card{
       background:#fff;
       padding:20px;
       border-radius:12px;
       box-shadow:0 4px 12px rgba(0,0,0,0.15);
     }
+
     .panel{ width:390px; flex-shrink:0; }
     .card{ flex:1; }
+
     label{ font-size:13px; display:block; margin-top:12px; font-weight:bold; }
+
     input, textarea, select, button{
       width:100%;
       padding:9px;
@@ -39,8 +45,10 @@
       border:1px solid #ccc;
       border-radius:6px;
     }
+
     input[type="range"]{ width:70%; vertical-align:middle; }
     .range-value{ font-size:13px; margin-left:10px; font-weight:bold; color:#2e7d32; }
+
     button{
       cursor:pointer;
       background:#2e7d32;
@@ -52,11 +60,15 @@
       font-weight:bold;
     }
     button:hover{ background:#256528; }
+
     .btn-secondary{ background:#1f6feb; }
     .btn-secondary:hover{ background:#1857b5; }
+
     .row{ display:flex; gap:16px; margin:20px 0; }
     .box{ flex:1; min-height:280px; }
+
     .hidden{ display:none; }
+
     fieldset{
       margin:16px 0;
       padding:12px;
@@ -64,8 +76,10 @@
       border-radius:10px;
     }
     legend{ font-weight:bold; color:#333; }
+
     .club-badge{ width:85px; display:block; margin-bottom:10px; }
     .muted{ color:#666; font-size:13px; }
+
     @media print{
       body{ background:white !important; }
       .wrap > *:not(.card), button, .hidden{ display:none !important; }
@@ -115,12 +129,16 @@
       <!-- Attendance -->
       <fieldset>
         <legend>Attendance</legend>
+
         <label for="trainAtt">Training attended</label>
         <input id="trainAtt" type="number" min="0" value="0" />
+
         <label for="trainTot">Total training sessions</label>
         <input id="trainTot" type="number" min="0" value="0" />
+
         <label for="gameAtt">Games attended</label>
         <input id="gameAtt" type="number" min="0" value="0" />
+
         <label for="gameTot">Total games</label>
         <input id="gameTot" type="number" min="0" value="0" />
       </fieldset>
@@ -130,12 +148,16 @@
         <legend>Technical Skills (Avg: <span id="techAvg">0</span>/100)</legend>
         <label for="passing">Passing</label>
         <input type="range" id="passing" min="0" max="100" value="0" /><span id="passingVal" class="range-value">0</span>
+
         <label for="control">Control / First Touch</label>
         <input type="range" id="control" min="0" max="100" value="0" /><span id="controlVal" class="range-value">0</span>
+
         <label for="dribbling">Dribbling / Manipulation</label>
         <input type="range" id="dribbling" min="0" max="100" value="0" /><span id="dribblingVal" class="range-value">0</span>
+
         <label for="receiving">Receiving / Trapping</label>
         <input type="range" id="receiving" min="0" max="100" value="0" /><span id="receivingVal" class="range-value">0</span>
+
         <label for="crossing">Crossing / Delivery</label>
         <input type="range" id="crossing" min="0" max="100" value="0" /><span id="crossingVal" class="range-value">0</span>
       </fieldset>
@@ -145,12 +167,16 @@
         <legend>Finishing (Avg: <span id="finishAvg">0</span>/100)</legend>
         <label for="finishing">Finishing / 1v1</label>
         <input type="range" id="finishing" min="0" max="100" value="0" /><span id="finishingVal" class="range-value">0</span>
+
         <label for="shotPower">Shot Power</label>
         <input type="range" id="shotPower" min="0" max="100" value="0" /><span id="shotPowerVal" class="range-value">0</span>
+
         <label for="shotAccuracy">Shot Accuracy</label>
         <input type="range" id="shotAccuracy" min="0" max="100" value="0" /><span id="shotAccuracyVal" class="range-value">0</span>
+
         <label for="weakFoot">Weak Foot</label>
         <input type="range" id="weakFoot" min="0" max="100" value="0" /><span id="weakFootVal" class="range-value">0</span>
+
         <label for="boxComposure">Composure in the Box</label>
         <input type="range" id="boxComposure" min="0" max="100" value="0" /><span id="boxComposureVal" class="range-value">0</span>
       </fieldset>
@@ -160,12 +186,16 @@
         <legend>Defending (Avg: <span id="defAvg">0</span>/100)</legend>
         <label for="def1v1">1v1 Defending</label>
         <input type="range" id="def1v1" min="0" max="100" value="0" /><span id="def1v1Val" class="range-value">0</span>
+
         <label for="tackling">Tackling</label>
         <input type="range" id="tackling" min="0" max="100" value="0" /><span id="tacklingVal" class="range-value">0</span>
+
         <label for="intercepting">Intercepting</label>
         <input type="range" id="intercepting" min="0" max="100" value="0" /><span id="interceptingVal" class="range-value">0</span>
+
         <label for="defPositioning">Defensive Positioning</label>
         <input type="range" id="defPositioning" min="0" max="100" value="0" /><span id="defPositioningVal" class="range-value">0</span>
+
         <label for="aerialDuels">Aerial Duels / Heading</label>
         <input type="range" id="aerialDuels" min="0" max="100" value="0" /><span id="aerialDuelsVal" class="range-value">0</span>
       </fieldset>
@@ -175,14 +205,19 @@
         <legend>Tactical Intelligence (Avg: <span id="tactAvg">0</span>/100)</legend>
         <label for="positioning">Tactical Positioning</label>
         <input type="range" id="positioning" min="0" max="100" value="0" /><span id="positioningVal" class="range-value">0</span>
+
         <label for="decisionMaking">Decision Making</label>
         <input type="range" id="decisionMaking" min="0" max="100" value="0" /><span id="decisionMakingVal" class="range-value">0</span>
+
         <label for="vision">Vision / Game Reading</label>
         <input type="range" id="vision" min="0" max="100" value="0" /><span id="visionVal" class="range-value">0</span>
+
         <label for="offBall">Off-the-Ball Movement</label>
         <input type="range" id="offBall" min="0" max="100" value="0" /><span id="offBallVal" class="range-value">0</span>
+
         <label for="pressing">Pressing / Recovery</label>
         <input type="range" id="pressing" min="0" max="100" value="0" /><span id="pressingVal" class="range-value">0</span>
+
         <label for="tacticalAwareness">Tactical Awareness</label>
         <input type="range" id="tacticalAwareness" min="0" max="100" value="0" /><span id="tacticalAwarenessVal" class="range-value">0</span>
       </fieldset>
@@ -192,12 +227,16 @@
         <legend>Physical Attributes (Avg: <span id="physAvg">0</span>/100)</legend>
         <label for="speed">Speed / Acceleration</label>
         <input type="range" id="speed" min="0" max="100" value="0" /><span id="speedVal" class="range-value">0</span>
+
         <label for="agility">Agility / Change of Direction</label>
         <input type="range" id="agility" min="0" max="100" value="0" /><span id="agilityVal" class="range-value">0</span>
+
         <label for="endurance">Endurance / Stamina</label>
         <input type="range" id="endurance" min="0" max="100" value="0" /><span id="enduranceVal" class="range-value">0</span>
+
         <label for="strength">Strength / Power</label>
         <input type="range" id="strength" min="0" max="100" value="0" /><span id="strengthVal" class="range-value">0</span>
+
         <label for="balance">Balance / Coordination</label>
         <input type="range" id="balance" min="0" max="100" value="0" /><span id="balanceVal" class="range-value">0</span>
       </fieldset>
@@ -207,14 +246,19 @@
         <legend>Psychological & Social (Avg: <span id="psychAvg">0</span>/100)</legend>
         <label for="effort">Effort / Work Ethic</label>
         <input type="range" id="effort" min="0" max="100" value="0" /><span id="effortVal" class="range-value">0</span>
+
         <label for="concentration">Concentration / Focus</label>
         <input type="range" id="concentration" min="0" max="100" value="0" /><span id="concentrationVal" class="range-value">0</span>
+
         <label for="composure">Composure under Pressure</label>
         <input type="range" id="composure" min="0" max="100" value="0" /><span id="composureVal" class="range-value">0</span>
+
         <label for="teamwork">Teamwork / Communication</label>
         <input type="range" id="teamwork" min="0" max="100" value="0" /><span id="teamworkVal" class="range-value">0</span>
+
         <label for="coachability">Coachability / Attitude</label>
         <input type="range" id="coachability" min="0" max="100" value="0" /><span id="coachabilityVal" class="range-value">0</span>
+
         <label for="resilience">Resilience / Determination</label>
         <input type="range" id="resilience" min="0" max="100" value="0" /><span id="resilienceVal" class="range-value">0</span>
       </fieldset>
@@ -261,11 +305,9 @@
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-  // ────────────────────────────────────────────────
-  // REPLACE WITH YOUR ACTUAL VALUES
+  // REPLACE WITH YOUR REAL VALUES
   const SUPABASE_URL  = "https://wzqxgudtgveumnqeowvn.supabase.co";
-  const SUPABASE_KEY  = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";  // ← your real anon key
-  // ────────────────────────────────────────────────
+  const SUPABASE_KEY  = "sb_publishable_U8aSfR1_823cZQ9_bxhRsg_AMfRKgqI";
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -372,46 +414,81 @@
     });
   });
 
-  async function savePlayer(){
+  async function savePlayer() {
     let name = ($("name").value || "").trim();
-    if (!name) return { error:{ message:"Player Name is required." } };
+    if (!name) {
+      alert("Player Name is required.");
+      return { error: { message: "Player Name is required." } };
+    }
 
-    // Normalize name for consistent matching
+    // Normalize name for reliable matching
     name = name.toLowerCase();
 
     const avgs = calculateAverages();
 
     const stats = {
-      trainAtt:num("trainAtt"), trainTot:num("trainTot"),
-      gameAtt:num("gameAtt"), gameTot:num("gameTot"),
-      passing:num("passing"), control:num("control"), dribbling:num("dribbling"),
-      receiving:num("receiving"), crossing:num("crossing"),
-      finishing:num("finishing"), shotPower:num("shotPower"), shotAccuracy:num("shotAccuracy"),
-      weakFoot:num("weakFoot"), boxComposure:num("boxComposure"),
-      def1v1:num("def1v1"), tackling:num("tackling"), intercepting:num("intercepting"),
-      defPositioning:num("defPositioning"), aerialDuels:num("aerialDuels"),
-      positioning:num("positioning"), decisionMaking:num("decisionMaking"), vision:num("vision"),
-      offBall:num("offBall"), pressing:num("pressing"), tacticalAwareness:num("tacticalAwareness"),
-      speed:num("speed"), agility:num("agility"), endurance:num("endurance"),
-      strength:num("strength"), balance:num("balance"),
-      effort:num("effort"), concentration:num("concentration"), composure:num("composure"),
-      teamwork:num("teamwork"), coachability:num("coachability"), resilience:num("resilience")
+      trainAtt: num("trainAtt"),     trainTot: num("trainTot"),
+      gameAtt: num("gameAtt"),       gameTot: num("gameTot"),
+      passing: num("passing"),       control: num("control"),       dribbling: num("dribbling"),
+      receiving: num("receiving"),   crossing: num("crossing"),
+      finishing: num("finishing"),   shotPower: num("shotPower"),   shotAccuracy: num("shotAccuracy"),
+      weakFoot: num("weakFoot"),     boxComposure: num("boxComposure"),
+      def1v1: num("def1v1"),         tackling: num("tackling"),      intercepting: num("intercepting"),
+      defPositioning: num("defPositioning"), aerialDuels: num("aerialDuels"),
+      positioning: num("positioning"), decisionMaking: num("decisionMaking"), vision: num("vision"),
+      offBall: num("offBall"),       pressing: num("pressing"),     tacticalAwareness: num("tacticalAwareness"),
+      speed: num("speed"),           agility: num("agility"),       endurance: num("endurance"),
+      strength: num("strength"),     balance: num("balance"),
+      effort: num("effort"),         concentration: num("concentration"), composure: num("composure"),
+      teamwork: num("teamwork"),     coachability: num("coachability"), resilience: num("resilience")
     };
 
     const averages = {
-      tech_avg:avgs.techAvg, tact_avg:avgs.tactAvg, phys_avg:avgs.physAvg, psych_avg:avgs.psychAvg,
-      finish_avg:avgs.finishAvg, def_avg:avgs.defAvg, overall:avgs.overall
+      tech_avg: avgs.techAvg,
+      tact_avg: avgs.tactAvg,
+      phys_avg: avgs.physAvg,
+      psych_avg: avgs.psychAvg,
+      finish_avg: avgs.finishAvg,
+      def_avg: avgs.defAvg,
+      overall: avgs.overall
     };
 
-    return await supabase.from("players").upsert({
+    console.log("Attempting to save player:", {
       name,
-      age_group:$("age").value || "",
-      position:$("pos").value || "",
-      report_date:$("reportDate").value || "",
-      stats,
-      averages,
-      comment:$("comment").value || ""
-    }, { onConflict:"name" });
+      age_group: $("age").value || "",
+      report_date: $("reportDate").value || "",
+      comment_preview: ($("comment").value || "").substring(0, 100) + "...",
+      stats_fields: Object.keys(stats).length,
+      averages
+    });
+
+    const { data, error } = await supabase
+      .from("players")
+      .upsert({
+        name,
+        age_group: $("age").value || "",
+        position: $("pos").value || "",
+        report_date: $("reportDate").value || "",
+        stats,
+        averages,
+        comment: $("comment").value || ""
+      }, { onConflict: "name" });
+
+    if (error) {
+      console.error("SAVE FAILED ────────────────────────────────────────");
+      console.error("Error message:", error.message);
+      console.error("Full error object:", error);
+      console.error("─────────────────────────────────────────────────────");
+
+      alert("Save failed!\n\n" + (error.message || "Unknown error – check browser console (F12 → Console tab)"));
+      return { error };
+    }
+
+    console.log("SAVE SUCCESSFUL ────────────────────────────────────────");
+    console.log("Saved data:", data);
+    console.log("─────────────────────────────────────────────────────");
+
+    return { data };
   }
 
   async function loadList(){
@@ -421,19 +498,23 @@
 
   $("saveBtn").onclick = async () => {
     const { error } = await savePlayer();
-    if (error) alert(error.message);
-    else await loadList();
+    if (error) {
+      // already alerted inside savePlayer
+    } else {
+      await loadList();
+    }
   };
 
   $("generateBtn").onclick = async () => {
     const { error } = await savePlayer();
-    if (error) return alert(error.message);
+    if (error) return; // already alerted
+
     await loadList();
 
     let playerName = ($("name").value || "").trim();
     if (!playerName) return alert("Player name is required");
-    playerName = playerName.toLowerCase();
 
+    playerName = playerName.toLowerCase();
     const encoded = encodeURIComponent(playerName);
     window.open(`report.html?name=${encoded}`, "_blank");
   };
@@ -443,19 +524,25 @@
 
     const nameToLoad = e.target.value.toLowerCase();
     const { data, error } = await supabase.from("players").select("*").eq("name", nameToLoad).single();
-    if (error || !data) return alert("Player not found");
+    if (error || !data) {
+      alert("Could not load player.");
+      return;
+    }
 
     $("team").value = data.team || "livi";
     applyTeam($("team").value);
 
     $("reportDate").value = data.report_date || "";
-    $("name").value = data.name || "";  // original casing (you can keep original if you store it separately)
+    $("name").value = data.name || "";
     $("age").value = data.age_group || "";
     $("pos").value = data.position || "";
     $("comment").value = data.comment || "";
 
     const s = data.stats || {};
-    Object.keys(s).forEach(k => { const el = $(k); if (el) el.value = s[k] ?? 0; });
+    Object.keys(s).forEach(k => {
+      const el = $(k);
+      if (el) el.value = s[k] ?? 0;
+    });
 
     refreshRangeSpans();
     updatePreview();
